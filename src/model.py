@@ -3,21 +3,19 @@ from tensorflow.keras.layers import LSTM, Dense, Dropout
 from tensorflow.keras.callbacks import EarlyStopping
 import matplotlib.pyplot as plt
 
-# -------------------------------
-# Build Model (Improved)
-# -------------------------------
+# build LSTM model
 def build_model(time_steps, num_features):
     model = Sequential()
 
-    # First LSTM layer
+    # first LSTM block
     model.add(LSTM(50, return_sequences=True, input_shape=(time_steps, num_features)))
     model.add(Dropout(0.2))
 
-    # Second LSTM layer
+    # second LSTM block
     model.add(LSTM(25))
     model.add(Dropout(0.2))
 
-    # Output layer (important: relu)
+    # final RUL output
     model.add(Dense(1, activation='relu'))
 
     model.compile(optimizer='adam', loss='mse')
@@ -25,9 +23,7 @@ def build_model(time_steps, num_features):
     return model
 
 
-# -------------------------------
-# Train Model
-# -------------------------------
+# train model
 def train_model(model, X, y):
 
     early_stop = EarlyStopping(
@@ -44,9 +40,7 @@ def train_model(model, X, y):
         callbacks=[early_stop]
     )
 
-    # -------------------------------
-    # Graph (Loss vs Epoch)
-    # -------------------------------
+    # plot training loss
     plt.figure()
     plt.plot(history.history['loss'], label='Train Loss')
     plt.plot(history.history['val_loss'], label='Validation Loss')

@@ -3,62 +3,53 @@ from src.preprocessing import calculate_rul, preprocess_data
 from src.sequence import create_sequences
 from src.model import build_model, train_model
 
+
 import numpy as np
 import pandas as pd
 from sklearn.metrics import mean_squared_error
 
-print("STARTED 🚀")
+print("STARTED ")
 
-# -------------------------------
-# LOAD TRAIN DATA
-# -------------------------------
+# load training data
 train_path = "predictive_maintenance_dataset/train_FD001.txt"
 df = load_data(train_path)
 
-print("Dataset Loaded ✅")
+print("Dataset Loaded ")
 
-# -------------------------------
-# PREPROCESS TRAIN
-# -------------------------------
+# preprocess training data
 df = calculate_rul(df)
 
 X_scaled, y, scaler = preprocess_data(df)
 
-# 🔥 CREATE CLEAN DATAFRAME (NO BUG)
+# keep scaled features with labels and engine ids
 df_processed = pd.DataFrame(X_scaled)
 df_processed['RUL'] = y.values
 df_processed['id'] = df['id'].values
 
-print("Preprocessing Done ✅")
+print("Preprocessing Done ")
 
-# -------------------------------
-# CREATE SEQUENCES
-# -------------------------------
+# make training sequences
 time_steps = 30
 X_seq, y_seq = create_sequences(df_processed, time_steps)
 
-print("Sequences Created ✅")
+print("Sequences Created ")
 
-# -------------------------------
-# BUILD + TRAIN MODEL
-# -------------------------------
+# build and train model
 model = build_model(time_steps, X_seq.shape[2])
 
-print("Model Built ✅")
+print("Model Built ")
 
 train_model(model, X_seq, y_seq)
 
-print("Training Complete ✅")
+print("Training Complete ")
 
-# -------------------------------
-# TEST DATA
-# -------------------------------
+# load test data
 test_path = "predictive_maintenance_dataset/test_FD001.txt"
 rul_path = "predictive_maintenance_dataset/RUL_FD001.txt"
 
 test_df = load_data(test_path)
 
-# APPLY SAME SCALER
+# use the train scaler
 X_test = test_df.drop(columns=[
     'id', 'cycle',
     'op3', 's1', 's5', 's10', 's16', 's18', 's19'
@@ -68,7 +59,7 @@ X_test_scaled = scaler.transform(X_test)
 test_scaled_df = pd.DataFrame(X_test_scaled)
 test_scaled_df['id'] = test_df['id'].values
 
-# CREATE LAST SEQUENCE PER ENGINE
+# last sequence for each engine
 X_test_seq = []
 
 for engine_id in test_scaled_df['id'].unique():
@@ -80,20 +71,18 @@ for engine_id in test_scaled_df['id'].unique():
 
 X_test_seq = np.array(X_test_seq)
 
-# TRUE RUL
+# true RUL values
 y_true = pd.read_csv(rul_path, header=None)[0].values
 
-# PREDICT
+# predict test RUL
 y_pred = model.predict(X_test_seq)
 
-# RMSE
+# evaluate RMSE
 rmse = np.sqrt(mean_squared_error(y_true, y_pred))
 
 print("\nFINAL RMSE:", rmse)
 
-# -------------------------------
-# MAINTENANCE DECISIONS
-# -------------------------------
+# basic maintenance status
 print("\nMaintenance Decisions:")
 
 for i, val in enumerate(y_pred):
@@ -101,10 +90,10 @@ for i, val in enumerate(y_pred):
     rul = val[0]
 
     if rul < 25:
-        status = "🔴 Critical"
+        status = " Critical"
     elif rul < 50:
-        status = "🟡 Warning"
+        status = " Warning"
     else:
-        status = "🟢 Healthy"
+        status = " Healthy"
 
     print(f"Engine {i+1}: {status} (RUL={rul:.2f})")

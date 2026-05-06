@@ -1,27 +1,23 @@
 from sklearn.preprocessing import MinMaxScaler
 
-# -------------------------------
-# Calculate RUL (WITH PIECEWISE)
-# -------------------------------
+# calculate remaining useful life
 def calculate_rul(df):
     max_cycle = df.groupby('id')['cycle'].transform('max')
     df['RUL'] = max_cycle - df['cycle']
 
-    # 🔥 VERY IMPORTANT (Piecewise RUL)
+    # cap RUL at 125
     df['RUL'] = df['RUL'].clip(upper=125)
 
     return df
 
 
-# -------------------------------
-# Preprocess Data
-# -------------------------------
+# preprocess data
 def preprocess_data(df, scaler=None):
 
-    # Drop useless columns
+    # remove cycle before scaling
     df = df.drop(columns=['cycle'])
 
-    # OPTIONAL: drop dead sensors (better model)
+    # remove flat sensors
     df = df.drop(columns=['op3', 's1', 's5', 's10', 's16', 's18', 's19'])
 
     X = df.drop(columns=['RUL', 'id'])
