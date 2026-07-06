@@ -160,7 +160,7 @@ The graph compares training loss and validation loss across epochs. The file is 
 
 ## Research Paper
 
-A project research paper/write-up is included here:
+A detailed project research paper/write-up is included here:
 
 ```text
 docs/research-paper.pdf
